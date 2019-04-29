@@ -2,145 +2,148 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <title>Favorite Movies</title>
-  <style type="text/css">
-    button,
-    div,
-    form,
-    input {
-      margin: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
 
 <body>
 
-  <div class="container">
-    <h1>Movie Search</h1>
 
-  
-   
-    <div id="buttons-view">
- <!-- this is an empty div for storing all of our generated buttons -->
 
+    <div class="animal-buttons">
+
+        <!-- fill with animal buttons  -->
     </div>
 
-        <!-- WE HAVE TO CALL THE preventDefault FUNCTION TO PREVENT THIS FORM FROM SENDING DATA WHEN BUTTON CLICKED -->
-    <!-- this automatically makes a form to enter text into  -->
-    <form id="movie-form">
-      <label for="movie-input">Add a Movie, Yo!</label>
-      <input type="text" id="movie-input"><br>
-
-      <!-- Button triggers new movie to be added -->
-      <input id="add-movie" type="submit" value="Add a Movie, plese!">
+    <form id="new-animal">
+        <label for="animal-input">Add an Animal!</label>
+        <input type="text" id="animal-input"> <br>
+        <input id="add-animal" type="submit" value="Add An Animal!">
     </form>
 
+    <div id="gifs-appear-here"></div>
 
-    <div id="movies">
 
-      <!-- NEW MOVIE ATTRIBUTES WILL BE ADDED TO THIS DIV  (POSTER, NAME, ACTORS) ETC...!! -->
 
-    </div>
-
-    <!-- JQUERY ADDED HERE -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <!-- js here -->
     <script type="text/javascript">
-
-
-      // Initial array of movies (dont really need this if we dont want)
-      var movies = ["The Matrix", "The Notebook", "Mr. Nobody", "The Lion King"];
+        let animalsArray = ["Dog", "Cat", "Horse", "Mouse"];
 
 
 
-      // Function for dumping the JSON content for each button into the div
-      function displayMovieInfo() {
-
-        // YOUR CODE GOES HERE!!! HINT: You will need to create a new div to hold the JSON.
-        const movieName = $(this).attr("data-name");
-        const queryUrl = "https://www.omdbapi.com/?t=" + movieName + "&apikey=trilogy";
-        $.ajax({
-          url: queryUrl,
-          method: "GET"
-        }).then(function (response) {
-          console.log(response);
-          renderMovie(response);
-        });
-      };
-
-      // first we need to store the data associated with the button to a new variable so we can pass it to our ajax request
-      // we can use this.attr("data-name") becuase we assign each generated button a data attribute of the movie name below in our loop
-        const movieName = $(this).attr("data-name");
 
 
-      
-      // create a function that will render data from the api/ajax request into the empty movies div 
-      function renderMovie(movie) {
 
-        // we are going to put a new div full of movie data inside the exiating empty #movies div
-        // first save the new empty div to a variable 
-        const movieContainer = $("<div>");
-          // append a h2 tag for the movie title and img tag for the poster to the empty div 
-        movieContainer.append(`<h2>${movie.Title}</h2>`)
-        movieContainer.append(`<img src="${movie.Poster}" />`)
-        movieContainer.append(`<p>${movie.Awards}`)
-        // then prepend each new batch of movie data in front of the previous one so we see it at top of page 
-        $("#movies").prepend(movieContainer)
+        function renderButtons() {
+            $(".animal-buttons").empty();
 
-      }
-      // Function for displaying all requested movie buttons to the DOM
-      function renderButtons() {
+            for (let i = 0; i < animalsArray.length; i++) {
+                var button = $("<button>");
+                button.addClass("animal")
+                button.attr("data-name", animalsArray[i]);
+                button.text(animalsArray[i]);
+                $(".animal-buttons").append(button);
 
-        // wipe existing buttons each time since js will add all existing as well as new buttons if we dont 
-        $("#buttons-view").empty();
-
-        // Looping through the array of movies
-        for (var i = 0; i < movies.length; i++) {
-
-          // make a new button and save to a variable 
-          var a = $("<button>");
-          // Adding a class of movie to each new button
-          a.addClass("movie");
-          // Adding a data-attribute to each new button 
-          a.attr("data-name", movies[i]);
-          // Providing the initial button text for each button 
-          a.text(movies[i]);
-          // Adding the button to the buttons-view div
-          $("#buttons-view").append(a);
+            }
         }
-      }
 
-      // This handles us clicking the add movie button 
+        $("#add-animal").on("click", function (event) {
+            event.preventDefault();
 
-      $("#add-movie").on("click", function (event) {
-        // clear the default behaviour of the form button 
-        event.preventDefault();
+            var animal = $("#animal-input").val().trim();
+            animalsArray.push(animal);
+            renderButtons();
+        });
 
-        // This line grabs the input from the textbox
-        var movie = $("#movie-input").val().trim();
 
-        // The movie from the textbox is then added to our array
-        movies.push(movie);
 
-        // Call renderButtons which handles the processing of our movie array and regens a movie button for each item in the array 
+
+
+        $(document).on("click", ".animal", function () {
+            // In this case, the "this" keyword refers to the button that was clicked
+            var animal = $(this).attr("data-name");
+
+            // Constructing a URL to search Giphy for the name of the person who said the quote
+            var queryURL =
+                "https://api.giphy.com/v1/gifs/search?q=" +
+                animal +
+                "&api_key=UpFQkW5B3JHAAjb5Cnsm2a1ufE8wpNMS&limit=5";
+
+            // Performing our AJAX GET request
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            })
+                // After the data comes back from the API
+                .then(function (response) {
+                    // Storing an array of results in the results variable
+                    var results = response.data;
+
+                    // Looping over every result item
+                    for (var i = 0; i < results.length; i++) {
+                        // Only taking action if the photo has an appropriate rating
+                        if (results[i].rating !== "r" && results[i].rating !== "pg-13") {
+                            // Creating a div for the gif
+                            var gifDiv = $("<div>");
+
+                            // Storing the result item's rating
+                            var rating = results[i].rating;
+
+                            // Creating a paragraph tag with the result item's rating
+                            var p = $("<p>").text("Rating: " + rating);
+
+                            // Creating an image tag
+                            var animalGiph = $("<img>");
+
+                            // Giving the image tag an src attribute of a proprty pulled off the
+                            // result item
+                            animalGiph.attr("src", results[i].images.fixed_height_still.url);
+                            animalGiph.attr("data-still", results[i].images.fixed_height_still.url);
+                            animalGiph.attr("data-animate", results[i].images.fixed_height.url);
+                            animalGiph.attr("data-state", "still");
+                            animalGiph.addClass("giph");
+
+                            // Appending the paragraph and personImage we created to the "gifDiv" div we created
+                            gifDiv.append(p);
+                            gifDiv.append(animalGiph);
+
+                            // Prepending the gifDiv to the "#gifs-appear-here" div in the HTML
+                            $("#gifs-appear-here").prepend(gifDiv);
+                        }
+                    }
+                });
+        });
+
         renderButtons();
 
-      });
+        $(document).on("click", ".giph", function () {
+            console.log("click");
+            var state = $(this).attr("data-state");
 
-      // click handler for any generated movie button will show ajax/api data on the DOM 
-      // becuase we assign a class of .movie to each newly generated button 
-      $(document).on("click", ".movie", displayMovieInfo);
+            if (state === "still") {
+                $(this).attr("src", $(this).attr("data-animate"));
+                $(this).attr("data-state", "animate");
+            }
+            else {
+                $(this).attr("src", $(this).attr("data-still"));
+                $(this).attr("data-state", "still");
+            }
 
-      // Calling the renderButtons function to display the intial buttons
-      renderButtons();
+        });
 
- 
-     
+
+
+
+
+
+
+
+
+
     </script>
-  </div>
+
 </body>
 
 </html>
-
-
